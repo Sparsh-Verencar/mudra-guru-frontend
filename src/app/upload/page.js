@@ -10,10 +10,7 @@ export default function UploadPage() {
     try {
       const mediaStream = await navigator.mediaDevices.getUserMedia({ video: true });
       setStream(mediaStream);
-      if (videoRef.current) {
-        videoRef.current.srcObject = mediaStream;
-        setIsCameraOn(true);
-      }
+      setIsCameraOn(true); // trigger video render
     } catch (err) {
       console.error("Error accessing webcam:", err);
       alert("Could not access camera. Please allow camera permissions.");
@@ -28,8 +25,16 @@ export default function UploadPage() {
     }
   };
 
+  // Whenever the stream or video element changes, assign srcObject
   useEffect(() => {
-    return () => stopCamera(); // Stop camera on component unmount
+    if (videoRef.current && stream) {
+      videoRef.current.srcObject = stream;
+    }
+  }, [stream]);
+
+  // Stop camera on unmount
+  useEffect(() => {
+    return () => stopCamera();
   }, []);
 
   return (
@@ -53,7 +58,8 @@ export default function UploadPage() {
       <div className="w-[20rem] h-[20rem] border-2 border-gray-600 rounded-xl flex items-center justify-center overflow-hidden">
         {isCameraOn ? (
           <video ref={videoRef} autoPlay playsInline className="w-full h-full object-cover" />
-        ) : (          <p className="text-gray-400">Camera is off</p>
+        ) : (
+          <p className="text-gray-400">Camera is off</p>
         )}
       </div>
     </div>
